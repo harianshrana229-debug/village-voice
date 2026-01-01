@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<title>ગ્રામ અવાજ / Village Voice</title>
+<style>
+body { margin:0; font-family:Arial,sans-serif; background:linear-gradient(#87ceeb,#b3e5fc); overflow-x:hidden;}
+.sky{position:fixed; inset:0; z-index:0; overflow:hidden;}
+.sun{position:absolute; top:30px; left:30px; width:110px; height:110px; background:radial-gradient(circle,#fff59d,#ffeb3b); border-radius:50%; box-shadow:0 0 60px rgba(255,235,59,0.9);}
+.cloud{position:absolute;width:140px;height:50px; background:white;border-radius:50px; animation:moveClouds 50s linear infinite;}
+.cloud::before,.cloud::after{content:"";position:absolute;background:white;width:60px;height:60px;top:-25px;border-radius:50%;}
+.cloud::before{left:20px;} .cloud::after{right:20px;}
+.cloud.c1{top:90px; left:-200px;} .cloud.c2{top:160px; left:-350px; animation-duration:65s;}
+@keyframes moveClouds{to{transform:translateX(140vw);}}
+.bird{position:absolute; left:-50px; font-size:22px; animation:flyBird 35s linear infinite;}
+.bird.b2{top:190px;animation-duration:45s;}
+@keyframes flyBird{to{transform:translateX(130vw);}}
+.land{position:fixed; bottom:0; width:100%; height:160px; background:linear-gradient(#4caf50,#2e7d32); z-index:0;}
+nav{position:fixed; right:0; top:0; height:100%; width:180px; background:#0288d1; display:flex; flex-direction:column; padding-top:20px; z-index:3;}
+nav button{background:white;color:#0288d1;border:none;margin:10px;padding:10px;border-radius:10px;font-weight:bold; cursor:pointer;}
+main{margin-right:200px;padding:20px;position:relative; z-index:2;}
+section{display:none;} section.active{display:block;}
+.container{background:rgba(255,255,255,0.95); max-width:520px;margin:auto;padding:20px;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,0.25);}
+h2{text-align:center;color:#01579b;}
+textarea{width:100%;padding:10px;border-radius:8px;border:2px solid #ddd;}
+button.main{width:100%;padding:12px;margin-top:10px;background:linear-gradient(to right,#03a9f4,#0288d1);color:white;border:none;border-radius:10px;}
+.voice{background:#2e7d32;}
+.problem{background:#f1f9ff;border:2px solid #e3f2fd;padding:12px;border-radius:10px;margin-top:10px;}
+.vote-btn{padding:6px 10px;border-radius:6px;border:none;margin-right:8px;}
+.like{background:#2e7d32;color:white;}
+.dislike{background:#c62828;color:white;}
+canvas{margin-top:20px;background:white;border-radius:10px;}
+.language-btn{width:45%;padding:12px;margin:10px 2%;font-size:18px; cursor:pointer;border-radius:10px;border:none;color:white;font-weight:bold;}
+.lang-gu{background:#2e7d32;} .lang-en{background:#0288d1;}
+#currentLang{margin-top:10px;text-align:center;font-weight:bold;color:#01579b;}
+</style>
+</head>
+<body>
+
+<div class="sky">
+    <div class="sun"></div>
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+    <div class="bird">🐦</div>
+    <div class="bird b2">🐦</div>
+</div>
+<div class="land"></div>
+
+<nav>
+    <button onclick="showHome()">🏠 Home</button>
+    <button onclick="showSection('submit')">🕊️ New Complaints</button>
+    <button onclick="showSection('view')">📢 Complaints</button>
+    <button onclick="showSection('graph')">📊 Results</button>
+    <button onclick="showSection('help')">📞 Helpline</button>
+    <button onclick="switchLanguage()">🌐 Switch Language</button>
+</nav>
+
+<main>
+<section id="home" class="active">
+<div class="container" id="languageSelect">
+<h2>Choose Language / ભાષા પસંદ કરો</h2>
+<button class="language-btn lang-gu" onclick="setLanguage('gu')">ગુજરાતી</button>
+<button class="language-btn lang-en" onclick="setLanguage('en')">English</button>
+</div>
+<div class="container" id="homeContent" style="display:none;">
+<h2 id="homeTitle">Welcome</h2>
+<p id="homeText" style="text-align:center;font-size:18px;">Write your complaint with your area name</p>
+<button class="main" onclick="showSection('submit')" id="homeBtn">Go to Complaint</button>
+<div id="currentLang"></div>
+</div>
+</section>
+
+<section id="submit">
+<div class="container">
+<h2 id="submitTitle">New Complaint</h2>
+<textarea id="text" rows="4"></textarea>
+<button class="main voice" onclick="startVoice()" id="voiceBtn">🎤 Speak Complaint</button>
+<button class="main" onclick="addProblem()" id="sendBtn">📨 Send</button>
+</div>
+</section>
+
+<section id="view">
+<div class="container">
+<h2 id="viewTitle">Complaints</h2>
+<div id="problemList"></div>
+</div>
+</section>
+
+<section id="graph">
+<div class="container">
+<h2 id="graphTitle">Results</h2>
+<canvas id="chart" width="400" height="300"></canvas>
+</div>
+</section>
+
+<section id="help">
+<div class="container">
+<h2 id="helpTitle">Helpline</h2>
+<div class="helpline">🚰 Vijaybhai Patel – <a href="tel:9876543210">9876543210</a></div>
+<div class="helpline">⚡ Maheshbhai Solanki – <a href="tel:9898012345">9898012345</a></div>
+<div class="helpline">🧹 Rekhaben Chaudhary – <a href="tel:9723456789">9723456789</a></div>
+<div class="helpline">🚑 Dr. Kiranbhai Shah – <a href="tel:9811122334">9811122334</a></div>
+<div class="helpline">🛣️ Nitinbhai Rathod – <a href="tel:9667788990">9667788990</a></div>
+<div class="helpline">👮 Hardikbhai Parmar – <a href="tel:9900123456">9900123456</a></div>
+</div>
+</section>
+</main>
+
+<script>
+let problems = [];
+let language = 'gu';
+let userVotes = {};
+let guVoice = null;
+
+// --- Language ---
+function showHome(){ showSection('home'); }
+function showSection(id){ 
+    document.querySelectorAll("section").forEach(s=>s.classList.remove("active")); 
+    document.getElementById(id).classList.add("active"); 
+    if(id==="graph") drawPieChart();
+}
+function showLanguageSelection(){ 
+    document.getElementById('languageSelect').style.display='block'; 
+    document.getElementById('homeContent').style.display='none'; 
+}
+function setLanguage(lang){ 
+    language=lang; 
+    document.getElementById('languageSelect').style.display='none'; 
+    document.getElementById('homeContent').style.display='block'; 
+    updateLanguageContent();
+}
+function switchLanguage(){ 
+    language = language==='gu' ? 'en' : 'gu'; 
+    updateLanguageContent(); 
+}
+
+function updateLanguageContent(){
+ if(language==='gu'){
+     document.getElementById('homeTitle').innerText="ગ્રામ અવાજમાં આપનું સ્વાગત છે";
+     document.getElementById('homeText').innerText="કૃપા કરીને તમારી સમસ્યા વિસ્તારના નામ સાથે ફરિયાદ લખો";
+     document.getElementById('homeBtn').innerText="ફરિયાદ કરવા જાઓ";
+     document.getElementById('submitTitle').innerText="નવી ફરિયાદ";
+     document.getElementById('voiceBtn').innerText="🎤 બોલીને ફરિયાદ કરો";
+     document.getElementById('sendBtn').innerText="📨 મોકલો";
+     document.getElementById('viewTitle').innerText="ગામની ફરિયાદો";
+     document.getElementById('graphTitle').innerText="સહમતિ પરિણામ";
+     document.getElementById('helpTitle').innerText="જરૂરી સહાય સંપર્ક";
+     document.getElementById('currentLang').innerText = "વર્તમાન ભાષા: ગુજરાતી";
+ } else {
+     document.getElementById('homeTitle').innerText="Welcome to Village Voice";
+     document.getElementById('homeText').innerText="Write your complaint with your area name";
+     document.getElementById('homeBtn').innerText="Go to Complaint";
+     document.getElementById('submitTitle').innerText="New Complaint";
+     document.getElementById('voiceBtn').innerText="🎤 Speak Complaint";
+     document.getElementById('sendBtn').innerText="📨 Send";
+     document.getElementById('viewTitle').innerText="Complaints";
+     document.getElementById('graphTitle').innerText="Results";
+     document.getElementById('helpTitle').innerText="Helpline";
+     document.getElementById('currentLang').innerText = "Current Language: English";
+ }
+ renderProblems();
+ drawPieChart();
+}
+
+// --- Voice ---
+function loadGuVoice(){
+ guVoice = speechSynthesis.getVoices().find(v=>v.lang==='gu-IN' && /male/i.test(v.name)) || 
+           speechSynthesis.getVoices().find(v=>v.lang==='gu-IN');
+}
+speechSynthesis.onvoiceschanged = loadGuVoice;
+
+function speak(msg){
+ if(!('speechSynthesis' in window)) return;
+ let u = new SpeechSynthesisUtterance(msg);
+ u.rate = 0.9;
+ if(language==='gu'){ u.lang='gu-IN'; if(guVoice) u.voice=guVoice; }
+ else u.lang='en-US';
+ speechSynthesis.speak(u);
+}
+
+// --- Complaints ---
+function addProblem(){
+ let t = document.getElementById('text').value.trim();
+ if(!t){ alert(language==='gu'?"ફરિયાદ લખો":"Write a complaint"); return; }
+ problems.push({text:t,like:0,dislike:0});
+ document.getElementById('text').value='';
+ userVotes = {}; 
+ renderProblems();
+ speak(language==='gu'?"તમારી ફરિયાદ નોંધાઈ ગઈ છે":"Your complaint has been submitted");
+}
+
+function renderProblems(){
+ let l=document.getElementById('problemList'); l.innerHTML='';
+ problems.forEach((p,i)=>{
+  l.innerHTML+=`<div class="problem">
+   <p>${p.text}</p>
+   <button class="vote-btn like" onclick="vote(${i},'like')" ${userVotes[i]==='like'?'disabled':''}>👍 ${p.like}</button>
+   <button class="vote-btn dislike" onclick="vote(${i},'dislike')" ${userVotes[i]==='dislike'?'disabled':''}>👎 ${p.dislike}</button>
+  </div>`;
+ });
+}
+
+function vote(i,type){ 
+ if(userVotes[i]) return; 
+ problems[i][type]++;
+ userVotes[i] = type;
+ renderProblems();
+ drawPieChart();
+}
+
+// --- Pie Chart ---
+function drawPieChart(){
+ let c=document.getElementById('chart'),ctx=c.getContext('2d');
+ ctx.clearRect(0,0,c.width,c.height);
+ let totalLikes=problems.reduce((s,p)=>s+p.like,0), totalDislikes=problems.reduce((s,p)=>s+p.dislike,0);
+ if(totalLikes+totalDislikes===0) return;
+ let start=0, likeAngle=(totalLikes/(totalLikes+totalDislikes))*2*Math.PI, dislikeAngle=(totalDislikes/(totalLikes+totalDislikes))*2*Math.PI;
+ ctx.fillStyle="#2e7d32"; ctx.beginPath(); ctx.moveTo(200,150); ctx.arc(200,150,100,start,start+likeAngle); ctx.closePath(); ctx.fill();
+ ctx.fillStyle="#c62828"; ctx.beginPath(); ctx.moveTo(200,150); ctx.arc(200,150,100,start+likeAngle,start+likeAngle+dislikeAngle); ctx.closePath(); ctx.fill();
+ ctx.fillStyle="#000"; ctx.font="16px Arial"; ctx.fillText(language==='gu'?`Like: ${totalLikes}`:`Likes: ${totalLikes}`,150,270);
+ ctx.fillText(language==='gu'?`Dislike: ${totalDislikes}`:`Dislikes: ${totalDislikes}`,250,270);
+}
+
+// --- Voice input ---
+function startVoice(){
+ if(!('webkitSpeechRecognition' in window)){ alert(language==='gu'?"Google Chrome વાપરો":"Use Google Chrome"); return; }
+ let r=new webkitSpeechRecognition();
+ r.lang=language==='gu'?'gu-IN':'en-US';
+ r.onresult=e=>document.getElementById('text').value+=" "+e.results[0][0].transcript;
+ r.start();
+}
+
+// --- Onload ---
+window.onload=()=>{
+ showLanguageSelection();
+ loadGuVoice();
+}
+</script>
+</body>
+</html>
